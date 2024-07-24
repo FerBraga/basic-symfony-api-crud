@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AddressRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 #[ORM\Table(name: 'addresses')]
@@ -12,30 +13,38 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['company:read'])]
     private ?string $street = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['company:read'])]
     private ?string $city = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['company:read'])]
     private ?string $country = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['company:read'])]
     private ?string $state = null;
 
     #[ORM\Column(length: 10)]
+    #[Groups(['company:read'])]
     private ?string $zipCode = null;
 
     #[ORM\OneToOne(targetEntity: Company::class, mappedBy: 'address')]
     private ?Company $company = null;
 
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function getId(): ?int

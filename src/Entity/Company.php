@@ -6,6 +6,8 @@ use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\Table(name: 'companies')]
@@ -14,27 +16,36 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['company:read'])]
+
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['company:read'])]
     private ?string $CNPJ = null;
 
-    #[ORM\OneToOne(targetEntity: Address::class, inversedBy: 'companies', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(targetEntity: Address::class, inversedBy: 'company', cascade: ['persist', 'remove'])]
+    #[Groups(['company:read'])]
     private Address $address;
 
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['company:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, Partner>
      */
     #[ORM\OneToMany(targetEntity: Partner::class, mappedBy: 'company')]
+    #[Groups(['company:read'])]
+    #[Ignore]
     private Collection $partners;
 
     public function __construct()
