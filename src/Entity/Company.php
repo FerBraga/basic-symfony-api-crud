@@ -6,8 +6,8 @@ use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\Table(name: 'companies')]
@@ -16,36 +16,33 @@ class Company
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['company:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['company:read'])]
-
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['company:read'])]
+    #[Assert\NotBlank]
+    #[Assert\Regex('/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/')]
     private ?string $CNPJ = null;
 
     #[ORM\OneToOne(targetEntity: Address::class, inversedBy: 'company', cascade: ['persist', 'remove'])]
-    #[Groups(['company:read'])]
+    #[Assert\NotBlank]
     private Address $address;
 
     #[ORM\Column]
-    #[Groups(['company:read'])]
+    #[Assert\NotBlank]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups(['company:read'])]
+    #[Assert\NotBlank]
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, Partner>
      */
     #[ORM\OneToMany(targetEntity: Partner::class, mappedBy: 'company')]
-    #[Groups(['company:read'])]
-    #[Ignore]
     private Collection $partners;
 
     public function __construct()

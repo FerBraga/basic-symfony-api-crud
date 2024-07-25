@@ -10,10 +10,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class PartnerController extends AbstractController
 {
-    #[Route('/partner', name: 'list_partners', methods: ['GET'])]
+
+    public function __construct(private AuthorizationCheckerInterface $authChecker)
+    {
+    }
+
+    #[Route('/partners', name: 'list_partners', methods: ['GET'])]
     public function index(PartnerRepository $partnerRepository): JsonResponse
     {
 
@@ -39,7 +47,7 @@ class PartnerController extends AbstractController
         ], 200);
     }
 
-    #[Route('/partner/{id}', name: 'show_partner', methods: ['GET'])]
+    #[Route('/partner/show/{id}', name: 'show_partner', methods: ['GET'])]
     public function show(PartnerRepository  $partnerRepository, int $id): JsonResponse
     {
 
@@ -70,42 +78,63 @@ class PartnerController extends AbstractController
         ], 200);
     }
 
-    #[Route('/partner', name: 'partner_create', methods: ['POST'])]
-    public function create(Request $request, PartnerRepository $partnerRepository, CompanyRepository $companyRepository): JsonResponse
+    #[Route('/partner/create', name: 'create_partner', methods: ['POST'])]
+    public function create(Request $request, PartnerRepository $partnerRepository, CompanyRepository $companyRepository, ValidatorInterface $validator, #[CurrentUser] $user): JsonResponse
     {
+        try {
 
-        $data = $request->toArray();
+            if (!$this->authChecker->isGranted('ROLE_ADMIN', $user)) {
+                throw $this->createAccessDeniedException('You do not have permission to access this resource.');
+            }
 
-        $partner = new Partner();
+            $data = $request->toArray();
 
-        $company = $companyRepository->find($data['companyId']);
+            $partner = new Partner();
 
-        if (!$company) {
-            throw $this->createNotFoundException('No company found for id ' . $data['companyId']);
+            $company = $companyRepository->find($data['companyId']);
+
+            if (!$company) {
+                throw $this->createNotFoundException('No company found for id ' . $data['companyId']);
+            }
+
+            $partnerAlreadyExists = $partnerRepository->findOneBy(['email' => $data['email']]);
+
+            if ($partnerAlreadyExists) {
+                throw new \InvalidArgumentException('Partner already exists with the same email');
+            }
+
+            $partner->setName($data['name']);
+            $partner->setLastName($data['lastName']);
+            $partner->setEmail($data['email']);
+            $partner->setRole($data['role']);
+            $partner->setCompany($company);
+            $partner->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
+            $partner->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
+
+            $this->validateEntity($validator, $partner);
+
+            $partnerRepository->add($partner, true);
+
+            $partner->getCompany()->addPartner($partner);
+
+            return $this->json([
+                'message' => 'Partner created successfully',
+            ], 201);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'message' => 'Bad request',
+                'errors' => $e->getMessage()
+            ], 400);
         }
-
-        $partner->setName($data['name']);
-        $partner->setLastName($data['lastName']);
-        $partner->setEmail($data['email']);
-        $partner->setRole($data['role']);
-        $partner->setCompany($company);
-        $partner->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
-        $partner->setUpdatedAt(new \DateTimeImmutable('now', new \DateTimeZone('America/Sao_Paulo')));
-
-        $partnerRepository->add($partner, true);
-
-        $partner->getCompany()->addPartner($partner);
-
-        // $companyRepository->addPartner($partner);
-
-        return $this->json([
-            'message' => 'Partner created successfully',
-        ], 201);
     }
 
     #[Route('/partner/edit/{id}', name: 'update_partner', methods: ['PUT'])]
-    public function update(Request $request, CompanyRepository $companyRepository, PartnerRepository $partnerRepository, int $id): JsonResponse
+    public function update(Request $request, CompanyRepository $companyRepository, PartnerRepository $partnerRepository, int $id, #[CurrentUser] $user): JsonResponse
     {
+
+        if (!$this->authChecker->isGranted('ROLE_ADMIN', $user)) {
+            throw $this->createAccessDeniedException('You do not have permission to access this resource.');
+        }
 
         $data = $request->toArray();
 
@@ -148,8 +177,12 @@ class PartnerController extends AbstractController
     }
 
     #[Route('/partner/delete/{id}', name: 'delete_partner', methods: ['DELETE'])]
-    public function delete(EntityManagerInterface $entityManager, int $id): JsonResponse
+    public function delete(EntityManagerInterface $entityManager, int $id, #[CurrentUser] $user): JsonResponse
     {
+
+        if (!$this->authChecker->isGranted('ROLE_ADMIN', $user)) {
+            throw $this->createAccessDeniedException('You do not have permission to access this resource.');
+        }
 
         $partner = $entityManager->getRepository(Partner::class)->find($id);
 
@@ -163,5 +196,15 @@ class PartnerController extends AbstractController
         return $this->json([
             'message' => 'Partner removed successfully',
         ], 204);
+    }
+
+    private function validateEntity($validator, $entity)
+    {
+        $errors = $validator->validate($entity);
+
+        if (count($errors) > 0) {
+            $errorsString = (string) $errors;
+            throw new \InvalidArgumentException($errorsString);
+        }
     }
 }
