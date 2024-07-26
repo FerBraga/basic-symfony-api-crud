@@ -1,93 +1,158 @@
 # VoxApiTest
 
 
+# Contexto
+Este projeto trata-se de uma simples API Restful onde o cliente pode acessar quadros societários de algumas empresas registradas.
+Caso o usuário tenha um papel de administrador do sistema ele poderá criar, atualizar e excluir empresas e sócios, e se for apenas
+um usuário comum terá acesso apenas a listagem e detalhes de empresas e sócios.
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Desenvolvimento 
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+> Backend
+```bash
+Feito em PHP com o framework Symfony e o ORM Doctrine com Postgres. 
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/FerBraga/voxapitest.git
-git branch -M main
-git push -uf origin main
-```
+> Banco de dados
+```bash
+Feito com o banco de dados relacional Postgres.O banco contará com as tabelas de companies, partners, addresses, 
+user. 
+``` 
 
-## Integrate with your tools
+## Instalando Dependências
 
-- [ ] [Set up project integrations](https://gitlab.com/FerBraga/voxapitest/-/settings/integrations)
+> Backend
+```bash
+Você precisará ter PHP 8.1 instalado e também o Symfony 6.4 (atual versão LTS). 
+Após clonar este repositório em seu diretório local, acesse a pasta onde foi clonado, 
+então rode o comando composer install para instalar todas as dependências. Crie um arquivo
+.env contendo suas credencias para acesso ao banco de dados e servidor. Um Exemplo do que
+precisará em seu arquivo de variáveis de ambiente:
 
-## Collaborate with your team
+`
+APP_ENV=dev
+APP_SECRET=51ebc5fd4d7575b306b88724b912810a
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+DATABASE_URL="pgsql://postgres:password@localhost:5432/api-vox"
 
-## Test and Deploy
+JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
+JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
+JWT_PASSPHRASE=49c7c2b4f867b95401ce4d4e8d2cc4d7af00b6de8ffdd28c4cc7f5060b7f2ceb
 
-Use the built-in continuous integration in GitLab.
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+`
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Também precisará das chaves para configurar o serviço de autenticação com JWT. 
+Rode o comando 'symfone console lexik:jwt:generate-keypair'.
 
-***
+``` 
 
-# Editing this README
+> Banco de dados
+```bash
+Após instalar back-end você irá configurar seu banco de dados Postgres, Caso já
+tenha o serviço rodando use a url de conexão para add ao arquivo .env, caso não
+tenha instalado poderá rodar também via container Docker.
+Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres'.
+``` 
+## Executando aplicação
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+* Para rodar o servidor:
 
-## Suggestions for a good README
+  ```
+  Acesse a pasta raíz do projeto e rode `symfony server:start`.
+  ```
+* Para implementar as tabelas do banco de dados:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+  ```
+  Acesse a pasta raíz do projeto e rode `symfony console doctrine:migrations:migrate` 
+  para rodar todas as migrations do banco e também para cadastrar dois usuários para 
+  seus testes rode `symfony console doctrine:fixtures:load`.
+  
+  
+ ### DOCUMENTAÇÃO API REST:
 
-## Name
-Choose a self-explaining name for your project.
+    `Obs: existe um arquivo JSON no projeto chamado 'apiRequests' para configurar seu ambiente de testes com
+    clients como Insomnia.`
+    
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Acesso: 
+ 
+ * Rota para login (POST - /login). Campos email e password obrigatórios. Exemplo:
+ 
+ <img src="./images/login.png">
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+ *Obs: existem dois usuários disponíveis para testes, com roles diferentes: 'user@meuemail.com, userpassword' e 'admin@meuemail.com, admin password'. Como dito acima, caso tente acessar alguma rota que não tem permissão receberá
+ um erro. Também precisará passar o token recebido ao logar no Authorization em todas as requests, como na 
+ imagem abaixo:
+ 
+  <img src="./images/authtoken.png">
+ 
+ 
+  ### Empresas: 
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+ * Rota de registro de empresa (POST - /company/create). Campos obrigatórios. 
+ 
+ Exemplo:
+ 
+ <img src="./images/companyCreate.png">
+ 
+   * Rota de listagem de empresas com seus respectivos endereços e sócios:
+    (GET - /companies).
+    
+    Exemplo:
+ 
+  <img src="./images/companiesList.png">
+ 
+ 
+  * Rota para retornar apenas uma empresa em detalhe (GET - /company/show/:id). 
+  
+  Exemplo:
+  
+  <img src="./images/showCompany.png">
+ 
+  
+ * Rota para atualizar empresa e por 'id' (PUT - /company/edit/:id). 
+  Exemplo:
+ 
+  <img src="./images/editCompany.png">
+ 
+ 
+ * Rota deleta empresa por 'id' (DELETE - /company/delete/:id).
+  Exemplo:
+ 
+  <img src="./images/deleteCompany.png">
+ 
+ 
+  ### Sócios: 
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+  * Rota adciona novo sócio (POST - /partner/create). Campos obrigatórios.
+   Exemplo:
+ 
+  <img src="./images/createPartner.png">
+ 
+ 
+ * Rota atualiza sócio por id (PUT - /partner/edit/:id). 
+    Exemplo:
+ 
+  <img src="./images/updatePartner.png">
+ 
+ 
+  * Rota lista sócios (GET - /partners).
+   Exemplo:
+ 
+  <img src="./images/partnersList.png">
+ 
+ 
+  * Rota lista todos os sócios e suas respectivas empresas (GET - /partner/show/:id).
+   Exemplo:
+ 
+  <img src="./images/partnerShow.png">
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+ * Rota para deleção de um sócios (DELETE - /partner/update/:id). 
+  Exemplo:
+ 
+  <img src="./images/deletePartner.png">
+  
+  
