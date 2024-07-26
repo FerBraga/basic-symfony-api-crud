@@ -72,15 +72,18 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
   
  ### DOCUMENTAÇÃO API REST:
 
-    `Obs: existe um arquivo JSON no projeto chamado 'apiRequests' para configurar seu ambiente de testes com
+    `Obs: existe um arquivo JSON no projeto chamado 'requestsApi' use-o para configurar seu ambiente de testes com
     clients como Insomnia.`
     
 
 ### Acesso: 
  
- * Rota para login (POST - /login). Campos email e password obrigatórios. Exemplo:
+ * Rota para login (POST - /login). Campos email e password obrigatórios. 
+ Exemplo:
  
  <img src="./images/login.png">
+
+
 
  *Obs: existem dois usuários disponíveis para testes, com roles diferentes: 'user@meuemail.com, userpassword' e 'admin@meuemail.com, admin password'. Como dito acima, caso tente acessar alguma rota que não tem permissão receberá
  um erro. Também precisará passar o token recebido ao logar no Authorization em todas as requests, como na 
@@ -96,6 +99,8 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
  Exemplo:
  
  <img src="./images/companyCreate.png">
+
+
  
    * Rota de listagem de empresas com seus respectivos endereços e sócios:
     (GET - /companies).
@@ -103,6 +108,8 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
     Exemplo:
  
   <img src="./images/companiesList.png">
+
+
  
  
   * Rota para retornar apenas uma empresa em detalhe (GET - /company/show/:id). 
@@ -110,18 +117,24 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
   Exemplo:
   
   <img src="./images/showCompany.png">
+
+
  
   
  * Rota para atualizar empresa e por 'id' (PUT - /company/edit/:id). 
   Exemplo:
  
   <img src="./images/editCompany.png">
+
+
  
  
  * Rota deleta empresa por 'id' (DELETE - /company/delete/:id).
   Exemplo:
  
   <img src="./images/deleteCompany.png">
+
+
  
  
   ### Sócios: 
@@ -130,18 +143,24 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
    Exemplo:
  
   <img src="./images/createPartner.png">
+
+
  
  
  * Rota atualiza sócio por id (PUT - /partner/edit/:id). 
     Exemplo:
  
   <img src="./images/updatePartner.png">
+
+
  
  
   * Rota lista sócios (GET - /partners).
    Exemplo:
  
   <img src="./images/partnersList.png">
+
+
  
  
   * Rota lista todos os sócios e suas respectivas empresas (GET - /partner/show/:id).
@@ -150,9 +169,13 @@ Ex: 'docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -d post
   <img src="./images/partnerShow.png">
 
 
+
+
  * Rota para deleção de um sócios (DELETE - /partner/update/:id). 
   Exemplo:
  
   <img src="./images/deletePartner.png">
+
+  
   
   
